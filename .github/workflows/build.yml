@@ -1,0 +1,29 @@
+name: Build FiveM Optimizer EXE
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch: # ปุ่มกดรันเองมือ
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup MSVC Compiler
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Compile C++ GUI Code
+      run: |
+        cl.exe /O2 /EHsc /W3 /std:c++17 main.cpp /fe:FiveM_Optimizer.exe /link User32.lib Gdi32.lib Comctl32.lib /SUBSYSTEM:WINDOWS
+
+    - name: Upload Built EXE Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: FiveM_Optimizer_Exe
+        path: FiveM_Optimizer.exe

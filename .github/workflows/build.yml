@@ -22,7 +22,7 @@ jobs:
 
     - name: Compile Direct2D GUI Code
       run: |
-        cl.exe /O2 /EHsc /W3 /std:c++17 main.cpp /Fe"FiveM_Optimizer.exe" /link User32.lib Gdi32.lib D2d1.lib Dwrite.lib /SUBSYSTEM:WINDOWS
+        cl.exe /O2 /EHsc /W3 /std:c++17 main.cpp /Fe"Chelx.exe" /link User32.lib Gdi32.lib D2d1.lib Dwrite.lib /SUBSYSTEM:WINDOWS
 
     - name: Upload Built EXE Artifact
       uses: actions/upload-artifact@v4

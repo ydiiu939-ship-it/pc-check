@@ -15,7 +15,6 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    # ใช้ Action ตัวนี้เพื่อโหลด cl.exe และ MSVC Environment เข้า PATH
     - name: Set up Developer Command Prompt
       uses: ilammy/msvc-dev-cmd@v1
       with:
@@ -23,10 +22,14 @@ jobs:
 
     - name: Compile C++ GUI Code
       run: |
-        cl.exe /O2 /EHsc /W3 /std:c++17 main.cpp /fe:FiveM_Optimizer.exe /link User32.lib Gdi32.lib Comctl32.lib /SUBSYSTEM:WINDOWS
+        cl.exe /O2 /EHsc /W3 /std:c++17 main.cpp /Fe"FiveM_Optimizer.exe" /link User32.lib Gdi32.lib Comctl32.lib /SUBSYSTEM:WINDOWS
+
+    - name: Check Created Files
+      run: |
+        dir
 
     - name: Upload Built EXE Artifact
       uses: actions/upload-artifact@v4
       with:
         name: FiveM_Optimizer_Exe
-        path: FiveM_Optimizer.exe
+        path: "**/FiveM_Optimizer.exe"

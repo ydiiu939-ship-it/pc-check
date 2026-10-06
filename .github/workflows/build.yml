@@ -1,4 +1,4 @@
-name: Build FiveM Optimizer EXE
+name: Build Modern FiveM Optimizer EXE
 
 on:
   push:
@@ -20,16 +20,12 @@ jobs:
       with:
         arch: x64
 
-    - name: Compile C++ GUI Code
+    - name: Compile Direct2D GUI Code
       run: |
-        cl.exe /O2 /EHsc /W3 /std:c++17 main.cpp /Fe"FiveM_Optimizer.exe" /link User32.lib Gdi32.lib Comctl32.lib /SUBSYSTEM:WINDOWS
-
-    - name: Check Created Files
-      run: |
-        dir
+        cl.exe /O2 /EHsc /W3 /std:c++17 main.cpp /Fe"FiveM_Optimizer.exe" /link User32.lib Gdi32.lib D2d1.lib Dwrite.lib /SUBSYSTEM:WINDOWS
 
     - name: Upload Built EXE Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: FiveM_Optimizer_Exe
-        path: "**/FiveM_Optimizer.exe"
+        name: CHELX_Cheker
+        path: "**/Chelx.exe"

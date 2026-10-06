@@ -5,7 +5,7 @@ on:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
-  workflow_dispatch: # ปุ่มกดรันเองมือ
+  workflow_dispatch:
 
 jobs:
   build:
@@ -15,8 +15,11 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Setup MSVC Compiler
-      uses: microsoft/setup-msbuild@v2
+    # ใช้ Action ตัวนี้เพื่อโหลด cl.exe และ MSVC Environment เข้า PATH
+    - name: Set up Developer Command Prompt
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
 
     - name: Compile C++ GUI Code
       run: |

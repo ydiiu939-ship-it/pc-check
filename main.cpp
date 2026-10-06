@@ -100,13 +100,14 @@ void CheckRequiredApps() {
         { L"DirectX End-User Runtimes", L"dir %windir%\\System32\\d3d9.dll 2>nul" },
         { L"Discord Desktop App", L"dir \"%localappdata%\\Discord\\app-*\" /b 2>nul" },
         { L"MSI Afterburner", L"dir \"C:\\Program Files (x86)\\MSI Afterburner\\MSIAfterburner.exe\" 2>nul" },
-        { L"7-Zip / WinRAR Archiver", L"where 7z 2>nul || where winrar 2>nul" }
+        // อัปเดตการตรวจเช็ก WinRAR จาก AppData Start Menu และ Program Files
+        { L"7-Zip / WinRAR Archiver", L"dir \"%appdata%\\Microsoft\\Windows\\Start Menu\\Programs\\WinRAR\" 2>nul || dir \"C:\\Program Files\\WinRAR\\WinRAR.exe\" 2>nul || where 7z 2>nul" }
     };
 
     int missingCount = 0;
     for (const auto& app : apps) {
         std::wstring res = RunCommand(app.cmd);
-        if (!res.empty() && res.find(L"ERROR") == std::wstring::npos) {
+        if (!res.empty() && res.find(L"ERROR") == std::wstring::npos && res.find(L"File Not Found") == std::wstring::npos) {
             logOutput.push_back(L"[ INSTALLED ]  " + app.name);
         } else {
             logOutput.push_back(L"[ MISSING ]    " + app.name);
@@ -168,15 +169,15 @@ void CreateD2DResources(HWND hwnd) {
             &pRenderTarget
         );
 
-        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0x0F172A), &pBrushBg);          // Dark slate background
-        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0x1E293B), &pBrushCard);        // Darker slate card
-        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0x0B0F19), &pBrushTitleBar);    // Top bar
-        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0xF8FAFC), &pBrushTextMain);    // Bright white text
-        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0x94A3B8), &pBrushTextSub);     // Muted gray text
-        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0x38BDF8), &pBrushAccent);      // Cyan accent
-        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0x2563EB), &pBrushButtonNormal);  // Blue button
-        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0x3B82F6), &pBrushButtonHover);   // Light blue hover
-        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0xEF4444), &pBrushCloseHover);   // Red hover for close button
+        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0x0F172A), &pBrushBg);
+        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0x1E293B), &pBrushCard);
+        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0x0B0F19), &pBrushTitleBar);
+        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0xF8FAFC), &pBrushTextMain);
+        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0x94A3B8), &pBrushTextSub);
+        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0x38BDF8), &pBrushAccent);
+        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0x2563EB), &pBrushButtonNormal);
+        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0x3B82F6), &pBrushButtonHover);
+        pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0xEF4444), &pBrushCloseHover);
     }
 }
 
@@ -203,34 +204,32 @@ void OnRender(HWND hwnd) {
     float width = static_cast<float>(rc.right - rc.left);
     float height = static_cast<float>(rc.bottom - rc.top);
 
-    // 1. Draw Title Bar (Custom Drag Area)
+    // 1. Title Bar
     D2D1_RECT_F titleBarRect = D2D1::RectF(0, 0, width, 40);
     pRenderTarget->FillRectangle(titleBarRect, pBrushTitleBar);
 
     std::wstring appTitle = L"FIVEM PERFORMANCE SUITE v2.0";
     pRenderTarget->DrawText(appTitle.c_str(), appTitle.length(), pFontTitle, D2D1::RectF(15, 8, 300, 32), pBrushAccent);
 
-    // Close Button (X)
+    // Close Button
     D2D1_RECT_F closeBtnRect = D2D1::RectF(width - 40, 0, width, 40);
     if (isHoverClose) {
         pRenderTarget->FillRectangle(closeBtnRect, pBrushCloseHover);
     }
     pRenderTarget->DrawText(L"X", 1, pFontHeading, D2D1::RectF(width - 40, 8, width, 32), pBrushTextMain);
 
-    // 2. Action Buttons Section
-    // Button 1: Check Apps
+    // 2. Action Buttons
     D2D1_ROUNDED_RECT btnCheckRect = D2D1::RoundedRect(D2D1::RectF(20, 60, 260, 110), 8.0f, 8.0f);
     pRenderTarget->FillRoundedRectangle(btnCheckRect, isHoverBtnCheck ? pBrushButtonHover : pBrushButtonNormal);
     std::wstring txtCheck = L"1. Check Essential Apps";
     pRenderTarget->DrawText(txtCheck.c_str(), txtCheck.length(), pFontButton, D2D1::RectF(20, 72, 260, 110), pBrushTextMain);
 
-    // Button 2: Optimize FPS
     D2D1_ROUNDED_RECT btnOptRect = D2D1::RoundedRect(D2D1::RectF(280, 60, 520, 110), 8.0f, 8.0f);
     pRenderTarget->FillRoundedRectangle(btnOptRect, isHoverBtnOpt ? pBrushButtonHover : pBrushButtonNormal);
     std::wstring txtOpt = L"2. Optimize Windows FPS";
     pRenderTarget->DrawText(txtOpt.c_str(), txtOpt.length(), pFontButton, D2D1::RectF(280, 72, 520, 110), pBrushTextMain);
 
-    // 3. Log Output Card
+    // 3. Log Output Panel
     D2D1_ROUNDED_RECT cardRect = D2D1::RoundedRect(D2D1::RectF(20, 130, width - 20, height - 20), 10.0f, 10.0f);
     pRenderTarget->FillRoundedRectangle(cardRect, pBrushCard);
 
@@ -247,12 +246,10 @@ void OnRender(HWND hwnd) {
         textY += 22.0f;
     }
 
-    // 4. Custom Alert Dialog Overlay
+    // 4. Custom Alert Overlay
     if (showCustomAlert) {
-        // Semi-transparent backdrop
         pRenderTarget->FillRectangle(D2D1::RectF(0, 0, width, height), pBrushTitleBar);
 
-        // Alert Box
         D2D1_ROUNDED_RECT alertBox = D2D1::RoundedRect(D2D1::RectF(width / 2 - 180, height / 2 - 80, width / 2 + 180, height / 2 + 80), 12.0f, 12.0f);
         pRenderTarget->FillRoundedRectangle(alertBox, pBrushCard);
         pRenderTarget->DrawRoundedRectangle(alertBox, pBrushAccent, 1.5f);
@@ -260,7 +257,6 @@ void OnRender(HWND hwnd) {
         pRenderTarget->DrawText(alertTitle.c_str(), alertTitle.length(), pFontHeading, D2D1::RectF(width / 2 - 160, height / 2 - 65, width / 2 + 160, height / 2 - 35), pBrushAccent);
         pRenderTarget->DrawText(alertMsg.c_str(), alertMsg.length(), pFontBody, D2D1::RectF(width / 2 - 160, height / 2 - 25, width / 2 + 160, height / 2 + 25), pBrushTextMain);
 
-        // OK Button
         D2D1_ROUNDED_RECT alertBtn = D2D1::RoundedRect(D2D1::RectF(width / 2 - 50, height / 2 + 30, width / 2 + 50, height / 2 + 65), 6.0f, 6.0f);
         pRenderTarget->FillRoundedRectangle(alertBtn, pBrushButtonNormal);
         std::wstring okText = L"OK";
@@ -311,7 +307,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         float width = static_cast<float>(rc.right - rc.left);
         float height = static_cast<float>(rc.bottom - rc.top);
 
-        // Handle Alert Dialog Click
         if (showCustomAlert) {
             if (x >= width / 2 - 50 && x <= width / 2 + 50 && y >= height / 2 + 30 && y <= height / 2 + 65) {
                 showCustomAlert = false;
@@ -320,21 +315,17 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             return 0;
         }
 
-        // Close Button
         if (x >= width - 40 && x <= width && y >= 0 && y <= 40) {
             PostQuitMessage(0);
         }
-        // Smooth Dragging Window Anywhere on Title Bar
         else if (y <= 40) {
             ReleaseCapture();
             SendMessage(hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
         }
-        // Button Check
         else if (isHoverBtnCheck) {
             CheckRequiredApps();
             InvalidateRect(hwnd, NULL, FALSE);
         }
-        // Button Optimize
         else if (isHoverBtnOpt) {
             OptimizeWindows();
             InvalidateRect(hwnd, NULL, FALSE);
@@ -357,7 +348,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-// Entry Point
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) {
     const wchar_t CLASS_NAME[] = L"FiveM_D2D_GUI_Class";
 
@@ -369,7 +359,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
     RegisterClass(&wc);
 
-    // Create Borderless Window for Custom UI
     HWND hwnd = CreateWindowEx(
         0, CLASS_NAME, L"FiveM Performance Suite",
         WS_POPUP | WS_VISIBLE,
